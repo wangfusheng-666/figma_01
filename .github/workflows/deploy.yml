@@ -1,40 +1,50 @@
-name: Deploy to GitHub Pages
+name: 部署智健小康到 GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main"] # 如果您的主分支名是 master，请改为 master
+
+  # 允许手动从 Actions 选项卡运行此工作流
   workflow_dispatch:
 
+# 设置权限以允许部署到 GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# 确保同时只有一个部署在运行
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 检出代码
         uses: actions/checkout@v4
-      - name: Set up Node
+
+      - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # 删除了 cache: 'npm' 这一行，避免找不到 lock 文件报错
-      - name: Install dependencies
+          cache: 'npm'
+
+      - name: 安装依赖
         run: npm install
-      - name: Build
+
+      - name: 构建项目
         run: npm run build
-      - name: Setup Pages
+
+      - name: 设置 GitHub Pages
         uses: actions/configure-pages@v4
-      - name: Upload artifact
+
+      - name: 上传构建产物
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
-      - name: Deploy to GitHub Pages
+          path: './dist' # Vite 默认输出目录是 dist
+
+      - name: 部署到 GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
